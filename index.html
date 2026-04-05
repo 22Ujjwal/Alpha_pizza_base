@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Pizza Company Database</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
+        .dashboard-card {
+            background: var(--card-bg);
+            border-radius: 6px;
+            padding: 2rem;
+            border: 1px solid var(--border-color);
+            text-align: center;
+        }
+
+        .dashboard-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+            color: var(--text-dark);
+        }
+
+        .dashboard-card p {
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .dashboard-card .btn {
+            display: block;
+            width: 100%;
+        }
+
+        .info-section {
+            background: var(--light-bg);
+            padding: 2rem;
+            border-radius: 8px;
+            margin: 2rem 0;
+        }
+
+        .info-section h3 {
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+            font-size: 1.3rem;
+        }
+
+        .feature-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+        }
+
+        .feature-item {
+            padding: 1rem;
+            background: white;
+            border-radius: 4px;
+            border-left: 4px solid var(--secondary-color);
+        }
+
+        .feature-item strong {
+            color: var(--secondary-color);
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <h1>Alpha Pizza Base</h1>
+    </header>
+
+    <!-- Navigation -->
+    <nav>
+        <a href="index.html" class="active">Dashboard</a>
+        <a href="menu.html">Menu</a>
+        <a href="orders.html">Orders</a>
+        <a href="inventory-management.html">Inventory Management</a>
+        <a href="employee-management.html">Employee Management</a>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container">
+        <!-- DASHBOARD GRID -->
+        <div class="dashboard-grid">
+            <!-- Menu Card -->
+            <div class="dashboard-card">
+                <h3>Menu</h3>
+                <p>View and manage menu items</p>
+                <a href="menu.html" class="btn btn-primary">Go to Menu</a>
+            </div>
+           
+            <!-- Orders Card -->
+            <div class="dashboard-card">
+                <h3>Orders</h3>
+                <p>Track and manage orders</p>
+                <a href="orders.html" class="btn btn-primary">Go to Orders</a>
+            </div>
+            
+            <!-- Inventory Management Card -->
+            <div class="dashboard-card">
+                <h3>Inventory Management</h3>
+                <p>Manage items, ingredients, and stock levels</p>
+                <a href="inventory-management.html" class="btn btn-primary">Go to Inventory</a>
+            </div>
+           
+            <!-- Employee Management Card -->
+            <div class="dashboard-card">
+                <h3>Employee Management</h3>
+                <p>Manage employees and supervisors</p>
+                <a href="employee-management.html" class="btn btn-primary">Go to Employees</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2026 Alpha Pizza Base Database System. </p>
+        <p style="margin-top: 0.5rem; opacity: 0.8; font-size: 0.9rem;">Prepared by Team Alpha</p>
+    </footer>
+</body>
+</html>

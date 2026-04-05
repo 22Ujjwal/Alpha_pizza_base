@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventory Management - Pizza Company Database</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <h1>Alpha Pizza Base</h1>
+        <p class="header-subtitle">Inventory Management Interface</p>
+    </header>
+
+    <!-- Navigation -->
+    <nav>
+        <a href="index.html">Dashboard</a>
+        <a href="menu.html">Menu</a>
+        <a href="orders.html">Orders</a>
+        <a href="inventory-management.html" class="active">Inventory Management</a>
+        <a href="employee-management.html">Employee Management</a>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container">
+        <!-- Tab Navigation -->
+        <div class="tabs">
+            <button class="tab-button active" onclick="switchTab(event, 'search-items')">
+                Search Items
+            </button>
+            <button class="tab-button" onclick="switchTab(event, 'add-item')">
+                Add Item
+            </button>
+            <button class="tab-button" onclick="switchTab(event, 'manage-inventory')">
+                Manage Inventory
+            </button>
+            <button class="tab-button" onclick="switchTab(event, 'categories')">
+                Categories
+            </button>
+            <button class="tab-button" onclick="switchTab(event, 'ingredients')">
+                Ingredients
+            </button>
+        </div>
+
+        <!-- Search Items Tab -->
+        <div id="search-items" class="tab-content active">
+            <div class="card">
+                <h2 class="card-title">Search Menu Items</h2>
+                
+                <div class="search-bar">
+                    <input type="text" id="searchInput" placeholder="Search by Item Name, ID, or Category...">
+                    <button class="btn btn-primary" onclick="searchItems()">Search</button>
+                    <button class="btn btn-outline" onclick="resetSearch()">Reset</button>
+                </div>
+
+                <div id="searchResults" class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Item ID</th>
+                                <th>Item Name</th>
+                                <th>Category</th>
+                                <th>Price</th>
+                                <th>Available</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="itemsTableBody">
+                            <tr>
+                                <td colspan="6" class="text-center text-muted">
+                                    Enter search criteria and click Search to view items
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add New Item Tab -->
+        <div id="add-item" class="tab-content">
+            <div class="card">
+                <h2 class="card-title">Add New Menu Item</h2>
+                
+                <form id="addItemForm" onsubmit="handleAddItem(event)">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="itemName">Item Name <span class="required">*</span></label>
+                            <input type="text" id="itemName" name="itemName" required 
+                                   placeholder="e.g., Margherita Pizza">
+                        </div>
+                        <div class="form-group">
+                            <label for="itemCategory">Category <span class="required">*</span></label>
+                            <select id="itemCategory" name="itemCategory" required>
+                                <option value="">-- Select Category --</option>
+                                <option value="Pizza">Pizza</option>
+                                <option value="Pasta">Pasta</option>
+                                <option value="Appetizer">Appetizer</option>
+                                <option value="Salad">Salad</option>
+                                <option value="Dessert">Dessert</option>
+                                <option value="Beverage">Beverage</option>
+                                <option value="Seasonal Special">Seasonal Special</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="itemPrice">Price (USD) <span class="required">*</span></label>
+                            <input type="number" id="itemPrice" name="itemPrice" required 
+                                   step="0.01" min="0" placeholder="9.99">
+                        </div>
+                        <div class="form-group">
+                            <label for="itemAvailable">Available</label>
+                            <select id="itemAvailable" name="itemAvailable">
+                                <option value="1" selected>Yes</option>
+                                <option value="0">No</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="itemDescription">Description</label>
+                        <textarea id="itemDescription" name="itemDescription" 
+                                  placeholder="Brief description of the item (optional)"></textarea>
+                    </div>
+
+                    <div class="btn-group">
+                        <button type="submit" class="btn btn-primary">Add Item</button>
+                        <button type="reset" class="btn btn-outline">Clear Form</button>
+                    </div>
+                </form>
+
+                <div id="addItemMessage" class="hidden mt-2"></div>
+            </div>
+        </div>
+
+        <!-- Manage Inventory Tab -->
+        <div id="manage-inventory" class="tab-content">
+            <div class="card">
+                <h2 class="card-title">Adjust Item Inventory</h2>
+                <p class="text-muted mb-2">Update quantity and availability for existing items</p>
+
+                <div class="search-bar">
+                    <input type="text" id="inventorySearchInput" placeholder="Search item by Name or ID...">
+                    <button class="btn btn-primary" onclick="searchInventory()">Find Item</button>
+                </div>
+
+                <form id="updateInventoryForm" onsubmit="handleUpdateInventory(event)" class="hidden">
+                    <div class="alert alert-info">
+                        <strong>Edit Item Quantity</strong>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="invItemID">Item ID</label>
+                            <input type="text" id="invItemID" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label for="invItemName">Item Name</label>
+                            <input type="text" id="invItemName" readonly>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="invCurrentQty">Current Stock Level</label>
+                            <input type="number" id="invCurrentQty" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label for="invNewQty">New Stock Level <span class="required">*</span></label>
+                            <input type="number" id="invNewQty" required min="0" placeholder="Enter new quantity">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="invPrice">Current Price</label>
+                            <input type="number" id="invPrice" step="0.01" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label for="invNewPrice">Update Price (optional)</label>
+                            <input type="number" id="invNewPrice" step="0.01" min="0" placeholder="Leave blank to keep current">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="invAvailable">Availability</label>
+                        <select id="invAvailable">
+                            <option value="1">Available</option>
+                            <option value="0">Not Available</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="invNotes">Update Notes (optional)</label>
+                        <textarea id="invNotes" placeholder="e.g., Restocked from Supplier XYZ"></textarea>
+                    </div>
+
+                    <div class="btn-group">
+                        <button type="submit" class="btn btn-success">Update Inventory</button>
+                        <button type="button" class="btn btn-outline" onclick="cancelInventoryEdit()">Cancel</button>
+                    </div>
+                </form>
+
+                <div id="updateInventoryMessage" class="hidden mt-2"></div>
+            </div>
+        </div>
+
+        <!-- Categories Tab -->
+        <div id="categories" class="tab-content">
+            <div class="card">
+                <h2 class="card-title">Manage Item Categories</h2>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="newCategory">Add New Category <span class="required">*</span></label>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <input type="text" id="newCategory" placeholder="e.g., Limited Time Offer">
+                            <button class="btn btn-primary btn-small" onclick="addCategory()">Add</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="table-container mt-2">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Category Name</th>
+                                <th>Items Count</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="categoriesTableBody">
+                            <tr>
+                                <td colspan="3" class="text-center text-muted">No categories loaded. Data will be fetched from database.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div id="categoryMessage" class="hidden mt-2"></div>
+            </div>
+        </div>
+
+        <!-- Ingredients Tab -->
+        <div id="ingredients" class="tab-content">
+            <div class="card">
+                <h2 class="card-title">Manage Ingredients & Suppliers</h2>
+                <p class="text-muted mb-2">View ingredient stock levels and reorder information</p>
+
+                <div class="search-bar">
+                    <input type="text" id="ingredientSearchInput" placeholder="Search by Ingredient Name...">
+                    <button class="btn btn-primary" onclick="searchIngredients()">Search</button>
+                </div>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Ingredient ID</th>
+                                <th>Ingredient Name</th>
+                                <th>Current Stock</th>
+                                <th>Unit</th>
+                                <th>Reorder Level</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ingredientsTableBody">
+                            <tr>
+                                <td colspan="7" class="text-center text-muted">No ingredients loaded. Data will be fetched from database.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="mt-2">
+                    <button class="btn btn-secondary" onclick="showAddIngredient()">➕ Add New Ingredient</button>
+                </div>
+            </div>
+
+            <div id="addIngredientForm" class="card hidden">
+                <h2 class="card-title">Add New Ingredient</h2>
+                
+                <form onsubmit="handleAddIngredient(event)">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="ingName">Ingredient Name <span class="required">*</span></label>
+                            <input type="text" id="ingName" required placeholder="e.g., Fresh Basil">
+                        </div>
+                        <div class="form-group">
+                            <label for="ingUnit">Unit of Measurement <span class="required">*</span></label>
+                            <input type="text" id="ingUnit" required placeholder="e.g., kg, liters, units">
+                        </div>
+                    </div>
+<!-- Ujjwal-->
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="ingQtyInStock">Initial Quantity in Stock <span class="required">*</span></label>
+                            <input type="number" id="ingQtyInStock" required step="0.01" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label for="ingReorderLevel">Reorder Level <span class="required">*</span></label>
+                            <input type="number" id="ingReorderLevel" required step="0.01" min="0">
+                        </div>
+                    </div>
+
+                    <div class="btn-group">
+                        <button type="submit" class="btn btn-primary">Add Ingredient</button>
+                        <button type="button" class="btn btn-outline" onclick="hideAddIngredient()">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2026 Alpha Pizza Base Database System.</p>
+    </footer>
+
+    <script>
+        function switchTab(evt, tabName) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(tabName).classList.add('active');
+            evt.currentTarget.classList.add('active');
+        }
+    </script>
+
+</body>
+</html>
