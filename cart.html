@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cart - Pizza Company Database</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="dashboard.css">
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <h1>Alpha Pizza Base</h1>
+        <p class="header-subtitle">Menu Interface</p>
+    </header>
+
+    <!-- Navigation -->
+    <nav>
+        <a href="index.html">Dashboard</a>
+        <a href="menu.html" class="active">Menu</a>
+        <a href="orders.html">Orders</a>
+        <a href="inventory-management.html">Inventory Management</a>
+        <a href="employee-management.html">Employee Management</a>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container">
+
+        <div class="search-bar">
+            <p class="header-subtitle">Currently logged in as: Customer1</p>
+            <button class="btn btn-secondary" onclick="window.location.href='index.html'">Switch User</button>            
+        </div>
+
+        <p class="header-subtitle"><b>Order Total: $[total]</b></p>
+
+        <button class="btn btn-secondary" onclick="window.location.href='menu.html'">Back to Menu</button>    
+        <button class="btn btn-primary" onclick="window.location.href='index.html'">Place Order</button>    
+        <button class="btn btn-danger" onclick="window.location.href='index.html'">Cancel Order</button>    
+        <!-- Cart -->
+        
+        <div class="dashboard-grid">
+            <!-- Cart Card for an Item -->                                
+            <div class="dashboard-card">                    
+                    <h3>Item 1</h3>                                 
+                    <p>[current Quantity] x <i>Price</i>: <b>[subtotal]</b></p>
+                    <h4>Ingredients:</h4>
+                    <p>Ingredient1, Ingredient2, Ingredient3</p>                    
+                    <div class='quantity'>
+                        
+                        <label for="newQuantity">Update Quantity</label>
+                        <form method="POST" action="cart.html">
+                            <div style="display: flex; gap: 0.5rem; width:40%; margin:auto">
+                                <input type="hidden" name="item" value="Item1">             
+                                <input type="text" id="newQuantity" name="newQuantity" placeholder="[existing quantity]"> 
+                                <button type="submit" class="btn btn-primary btn-small">Update Quantity</button>
+                            </div>                        
+                        </form>
+                    </div>
+                    <br>
+                    <div class='removeFromCartButton'>
+                        <form method="POST" action="cart.html">
+                            <input type="hidden" name="item" value="Item1">
+                            <button class="btn-danger" type="submit"> Remove from cart </button>
+                        </form>
+                    </div>
+                    
+            </div>
+        </div>        
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2026 Alpha Pizza Base Database System.</p>
+    </footer>
+
+</body>
+</html>

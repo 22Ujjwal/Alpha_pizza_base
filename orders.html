@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Orders - Pizza Company Database</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="dashboard.css">
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <h1>Alpha Pizza Base</h1>
+        <p class="header-subtitle">Orders Interface</p>
+    </header>
+
+    <!-- Navigation -->
+    <nav>
+        <a href="index.html">Dashboard</a>
+        <a href="menu.html">Menu</a>
+        <a href="orders.html"class="active">Orders</a>
+        <a href="inventory-management.html">Inventory Management</a>
+        <a href="employee-management.html">Employee Management</a>
+    </nav>
+    <div class="container">
+
+        <div class="search-bar">
+            <p class="header-subtitle">Currently logged in as: Employee1</p>
+            <button class="btn btn-secondary" onclick="window.location.href='index.html'">Switch User</button>            
+        </div>        
+                
+        <div class="card">
+            <h2 class="card-title">View Open Orders</h2>
+            
+            <div id="ordersTableContainer" class="table-container">
+                <table>
+                    <colgroup>
+                        <col span="3">
+                        <col style = "border-right: 2px solid black">      
+                    </colgroup>                  
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Date</th>
+                            <th>Customer</th>
+                            <th>Total</th>
+
+                            <th>Item</th>
+                            <th>Quantity</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="itemsTableBody">
+                        <tr style = "border-top: 2px solid black">          
+                            <td rowspan="3">[Order ID]</td>
+                            <td rowspan="3">[Date]</td>
+                            <td rowspan="3">[Customer Name]</td>
+                            <td rowspan="3">[Total Amount]</td>
+
+                            <td>Item 1</td>
+                            <td>[Quantity]</td>
+                            <td>Filled</td>
+                            <td></td>         
+                        </tr>
+
+                        <tr>                                      
+                            <td>Item 2</td>
+                            <td>[Quantity]</td>
+                            <td>Not Filled</td>
+                            <td>
+                                <form method="POST" action="orders.html">         
+                                    <input type="hidden" name="orderDetail" value="[CustomerID]-[OrderId]-Item2">
+                                    <input type="hidden" name="employee" value="[employeeID]">                                    
+                                    <button type="submit"> Mark as filled </button>                                    
+                                </form>                            
+                            </td>         
+                        </tr>
+                        <tr>                                      
+                            <td>Item 3</td>
+                            <td>[Quantity]</td>
+                            <td>Not Filled</td>
+                            <td>
+                                <form method="POST" action="orders.html">         
+                                    <input type="hidden" name="orderDetail" value="[CustomerID]-[OrderId]-Item3">
+                                    <input type="hidden" name="employee" value="[employeeID]">                                    
+                                    <button type="submit"> Mark as filled </button>                                    
+                                </form>                            
+                            </td>         
+                        </tr>
+
+                        <tr style = "border-top: 2px solid black">          
+                            <td rowspan="3">[Order ID]</td>
+                            <td rowspan="3">[Date]</td>
+                            <td rowspan="3">[Customer Name]</td>
+                            <td rowspan="3">[Total Amount]</td>
+
+                            <td>Item 1</td>
+                            <td>[Quantity]</td>
+                            <td>Filled</td>
+                            <td></td>         
+                        </tr>
+
+                        <tr>                                      
+                            <td>Item 2</td>
+                            <td>[Quantity]</td>
+                            <td>Not Filled</td>
+                            <td>
+                                <form method="POST" action="orders.html">         
+                                    <input type="hidden" name="orderDetail" value="[CustomerID]-[OrderId]-Item2">
+                                    <input type="hidden" name="employee" value="[employeeID]">                                    
+                                    <button type="submit"> Mark as filled </button>                                    
+                                </form>                            
+                            </td>         
+                        </tr>
+                        <tr>                                      
+                            <td>Item 3</td>
+                            <td>[Quantity]</td>
+                            <td>Not Filled</td>
+                            <td>
+                                <form method="POST" action="orders.html">         
+                                    <input type="hidden" name="orderDetail" value="[CustomerID]-[OrderId]-Item3">
+                                    <input type="hidden" name="employee" value="[employeeID]">                                    
+                                    <button type="submit"> Mark as filled </button>                                    
+                                </form>                            
+                            </td>         
+                        </tr>
+
+                        <tr style = "border-top: 2px solid black">          
+                            <td rowspan="3">[Order ID]</td>
+                            <td rowspan="3">[Date]</td>
+                            <td rowspan="3">[Customer Name]</td>
+                            <td rowspan="3">[Total Amount]</td>
+
+                            <td>Item 1</td>
+                            <td>[Quantity]</td>
+                            <td>Filled</td>
+                            <td></td>         
+                        </tr>
+
+                        <tr>                                      
+                            <td>Item 2</td>
+                            <td>[Quantity]</td>
+                            <td>Not Filled</td>
+                            <td>
+                                <form method="POST" action="orders.html">         
+                                    <input type="hidden" name="orderDetail" value="[CustomerID]-[OrderId]-Item2">
+                                    <input type="hidden" name="employee" value="[employeeID]">                                    
+                                    <button type="submit"> Mark as filled </button>                                    
+                                </form>                            
+                            </td>         
+                        </tr>
+                        <tr>                                      
+                            <td>Item 3</td>
+                            <td>[Quantity]</td>
+                            <td>Not Filled</td>
+                            <td>
+                                <form method="POST" action="orders.html">         
+                                    <input type="hidden" name="orderDetail" value="[CustomerID]-[OrderId]-Item3">
+                                    <input type="hidden" name="employee" value="[employeeID]">                                    
+                                    <button type="submit"> Mark as filled </button>                                    
+                                </form>                            
+                            </td>         
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+
+        </div>                
+    </div>
+    
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2026 Alpha Pizza Base Database System.</p>
+    </footer>
+
+</body>
+</html>

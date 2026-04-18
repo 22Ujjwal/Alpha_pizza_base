@@ -49,6 +49,7 @@ header h1 {
 .header-subtitle {
   font-size: 0.95rem;
   opacity: 0.95;
+  align-content: center;
 }
 
 nav {

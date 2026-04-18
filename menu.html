@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menu - Pizza Company Database</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="dashboard.css">
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <h1>Alpha Pizza Base</h1>
+        <p class="header-subtitle">Menu Interface</p>
+    </header>
+
+    <!-- Navigation -->
+    <nav>
+        <a href="index.html">Dashboard</a>
+        <a href="menu.html" class="active">Menu</a>
+        <a href="orders.html">Orders</a>
+        <a href="inventory-management.html">Inventory Management</a>
+        <a href="employee-management.html">Employee Management</a>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container">
+
+        <div class="search-bar">
+            <p class="header-subtitle">Currently logged in as: Customer1</p>
+            <button class="btn btn-secondary" onclick="window.location.href='index.html'">Switch User</button>            
+        </div>
+
+        <button class="btn btn-primary" onclick="window.location.href='cart.html'">View Cart [X items?]</button>
+
+        <!-- Tab Navigation -->
+        <div class="tabs">
+            <button class="tab-button active" onclick="switchTab(event, 'category1')">
+                category1
+            </button>
+            <button class="tab-button" onclick="switchTab(event, 'category2')">
+                category2
+            </button>
+            <button class="tab-button" onclick="switchTab(event, 'category3')">
+                category3
+            </button>
+            <button class="tab-button" onclick="switchTab(event, 'category4')">
+                category4
+            </button>        
+        </div>
+
+        <!-- Search Items Tab -->
+        <div id="category1" class="tab-content active">
+            <div class="dashboard-grid">
+
+                <!-- Menu Card for an Item -->                                
+                <div class="dashboard-card">
+
+                        <form method="POST" action="cart.html">                        
+                        <h3>Item 1</h3>                                 
+                        <p><i>Price</i></p>
+                        <h4>Ingredients:</h4>
+                        <p>Ingredient1, Ingredient2, Ingredient3</p>
+                        <input type="hidden" name="item" value="Item1">
+                        <div class='addToCartButton'>
+                        <button class="btn btn-primary" type="submit"> Add to cart </button>
+                        </div>
+                        </form>
+                </div>
+            </div>
+        </div>
+
+    
+        <div id="category2" class="tab-content">
+            <div class="dashboard-grid">
+
+                <!-- Menu Card for an Item -->                                
+                <div class="dashboard-card">
+
+                        <form method="POST" action="cart.html">                        
+                        <h3>Item 2</h3>                                 
+                        <p><i>Price</i></p>
+                        <h4>Ingredients:</h4>
+                        <p>Ingredient1, Ingredient2, Ingredient3</p>
+                        <input type="hidden" name="item" value="Item2">
+                        <div class='addToCartButton'>
+                        <button class="btn btn-primary" type="submit"> Add to cart </button>
+                        </div>
+                        </form>
+                </div>
+            </div>
+        </div>
+
+        
+        <div id="category3" class="tab-content">
+            <div class="dashboard-grid">
+
+                <!-- Menu Card for an Item -->                                
+                <div class="dashboard-card">
+
+                        <form method="POST" action="cart.html">                        
+                        <h3>Item 3</h3>                                 
+                        <p><i>Price</i></p>
+                        <h4>Ingredients:</h4>
+                        <p>Ingredient1, Ingredient2, Ingredient3</p>
+                        <input type="hidden" name="item" value="Item3">
+                        <div class='addToCartButton'>
+                        <button class="btn btn-primary" type="submit"> Add to cart </button>
+                        </div>
+                        </form>
+                </div>
+            </div>
+        </div>
+
+        <div id="category4" class="tab-content">
+            <div class="dashboard-grid">
+
+                <!-- Menu Card for an Item -->                                
+                <div class="dashboard-card">
+
+                        <form method="POST" action="cart.html">                        
+                        <h3>Item 4</h3>                                 
+                        <p><i>Price</i></p>
+                        <h4>Ingredients:</h4>
+                        <p>Ingredient1, Ingredient2, Ingredient3</p>
+                        <input type="hidden" name="item" value="Item4">
+                        <div class='addToCartButton'>
+                        <button class="btn btn-primary" type="submit"> Add to cart </button>
+                        </div>
+                        </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2026 Alpha Pizza Base Database System.</p>
+    </footer>
+
+    <script>
+        function switchTab(evt, tabName) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(tabName).classList.add('active');
+            evt.currentTarget.classList.add('active');
+        }
+    </script>
+
+</body>
+</html>
