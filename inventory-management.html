@@ -328,6 +328,27 @@
             document.getElementById(tabName).classList.add('active');
             evt.currentTarget.classList.add('active');
         }
+
+	function handleAddItem(event) {
+	    const itemName = document.getElementById("itemName").value;
+	    const itemCategory = document.getElementById("itemCategory").value;
+	    const itemPrice = document.getElementById("itemPrice").value;
+	    const itemAvailable = document.getElementById("itemAvailable").value;
+	    const itemDescription = document.getElementById("itemDescription").value;
+	    
+	    const newItem = {
+		//itemId needs to be added
+        	itemName,
+        	itemCategory,
+        	itemPrice,
+        	itemAvailable,
+        	itemDescription
+    	    };
+
+	    inventory.push(newItem);
+	    alert("Item Added Successfully");
+	}
+	
     </script>
 
 </body>
