@@ -1,4 +1,47 @@
-<?php include 'db_connect.php'; ?>
+<!-- Removed "Phone" attribute since it was not part of the Emplpoyee relation -->
+<?php
+include 'db_connect.php';
+
+$emp = null;
+
+if (isset($_GET['search_id']) && $_GET['search_id'] !== "") {
+    $id = (int)$_GET['search_id'];
+
+    $result = $conn->query("SELECT * FROM EMPLOYEE WHERE EmployeeID = $id");
+
+    if ($result && $result->num_rows > 0) {
+        $emp = $result->fetch_assoc();
+    }
+}
+
+/* UPDATE EMPLOYEE */
+if (isset($_POST['upEmpID'])) {
+    $id = $_POST['upEmpID'];
+    $first = $_POST['upFirstName'];
+    $last = $_POST['upLastName'];
+    $email = $_POST['upEmail'];
+    $position = $_POST['upPosition'];
+    $salary = $_POST['upSalary'];
+    $supervisor = $_POST['upSupervisor'];
+    $department = $_POST['upDepartment'];
+
+
+    $sql = "UPDATE EMPLOYEE 
+            SET FirstName='$first',
+                LastName='$last',
+                Email='$email',
+                
+                Position='$position',
+                Salary='$salary',
+                SupervisorID='$supervisor',
+                Department='$department'
+            WHERE EmployeeID=$id";
+
+    $conn->query($sql);
+}
+?>
+
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -29,13 +72,15 @@
     <div class="container">
         <!-- TAB NAVIGATION -->
         <div class="tabs">
-            <button class="tab-button active" onclick="switchTab(event, 'search-employees')">
+            <button class="tab-button <?= isset($_GET['search_id']) ? '' : 'active' ?>" 
+            onclick="switchTab(event, 'search-employees')">
                 Search Employees
             </button>
             <button class="tab-button" onclick="switchTab(event, 'add-employee')">
                 Add Employee
             </button>
-            <button class="tab-button" onclick="switchTab(event, 'update-employee')">
+            <button class="tab-button <?= isset($_GET['search_id']) ? 'active' : '' ?>" 
+            onclick="switchTab(event, 'update-employee')">
                 Update Employee
             </button>
             <button class="tab-button" onclick="switchTab(event, 'employee-list')">
@@ -45,18 +90,23 @@
                 Supervisors
             </button>
         </div>
-
+<!-- ====================++++++++++++++++=========================================== 
+    ||                               SEARCH FOR EMPLOYEE                          ||
+    ================================================================================
+ -->
         <!-- Search Employees Tab -->
-        <div id="search-employees" class="tab-content active">
+        <div id="search-employees" class="tab-content">
             <div class="card">
                 <h2 class="card-title">Search Employees</h2>
                 <p class="text-muted mb-2">Find employees by ID, name, email, or department</p>
 
-                <div class="search-bar">
-                    <input type="text" id="searchInput" placeholder="Search by Name, ID, or Email...">
-                    <button class="btn btn-primary" onclick="searchEmployees()">Search</button>
-                    <button class="btn btn-outline" onclick="resetSearch()">Reset</button>
-                </div>
+                <form method="GET">
+                    <div class="search-bar">
+                        <input type="text" name="search" placeholder="Search by Name, ID, or Email..."
+                            value="<?= $_GET['search'] ?? '' ?>">
+                        <button class="btn btn-primary" type="submit">Search</button>
+                    </div>
+                </form>
 
                 <div class="form-group" style="margin-top: 1rem;">
                     <select id="searchFilter" onchange="searchEmployees()">
@@ -120,8 +170,7 @@
                                 <small class="text-muted">Must be a valid email address</small>
                             </div>
                             <div class="form-group">
-                                <label for="phone">Phone Number</label>
-                                <input type="tel" id="phone" placeholder="(555) 123-4567">
+                                
                             </div>
                         </div>
 
@@ -200,17 +249,28 @@
             </div>
         </div>
 
+<!-- ====================++++++++++++++++=========================================== 
+    ||                               UPDATE EMPLOYEE                              ||
+    ================================================================================
+ -->
         <!-- Update Employee Tab -->
-        <div id="update-employee" class="tab-content">
+        <div id="update-employee" class="tab-content <?= isset($_GET['search_id']) ? 'active' : '' ?>">
             <div class="card">
                 <h2 class="card-title">Update Employee Information</h2>
 
-                <div class="search-bar">
-                    <input type="text" id="updateEmployeeSearchInput" placeholder="Search employee by Name or ID...">
-                    <button class="btn btn-primary" onclick="findEmployeeToUpdate()">Find Employee</button>
-                </div>
+                <!--input type="text" id="updateEmployeeSearchInput" placeholder="Search employee by Name or ID...">
+                    <!--button class="btn btn-primary" onclick="findEmployeeToUpdate()">Find Employee</button>-->
+                
+                    <form method="GET">
+                    <div class="search-bar">
+                        <input type="text" name="search_id" placeholder="Search employee by ID..."
+                            value="<?= $_GET['search_id'] ?? '' ?>">
+                        <button class="btn btn-primary" type="submit">Find Employee</button>
+                    </div>
+                </form>
 
-                <form id="updateEmployeeForm" onsubmit="handleUpdateEmployee(event)" class="hidden">
+                <!--Make form appear when employee is found -->
+                <form method="POST" class="<?= $emp ? '' : 'hidden' ?>">
                     <div class="alert alert-info">
                         <strong>Edit Employee Information</strong>
                     </div>
@@ -222,33 +282,37 @@
                         <div class="form-row">
                             <div class="form-group">
                                 <label for="upEmpID">Employee ID</label>
-                                <input type="text" id="upEmpID" readonly>
+                                <input type="text" id="upEmpID" name="upEmpID" readonly
+                                value="<?= $emp['EmployeeID'] ?? '' ?>">
                             </div>
                             <div class="form-group">
                                 <label for="upEmail">Email <span class="required">*</span></label>
-                                <input type="email" id="upEmail" required>
+                                <input type="email" id="upEmail" name="upEmail"
+                                value="<?= $emp['Email'] ?? '' ?>">
                             </div>
                         </div>
 
                         <div class="form-row">
                             <div class="form-group">
                                 <label for="upFirstName">First Name <span class="required">*</span></label>
-                                <input type="text" id="upFirstName" required>
+                                <input type="text" id="upFirstName" name="upFirstName"
+                                value="<?= $emp['FirstName'] ?? '' ?>">
                             </div>
                             <div class="form-group">
                                 <label for="upLastName">Last Name <span class="required">*</span></label>
-                                <input type="text" id="upLastName" required>
+                                <input type="text" id="upLastName" name="upLastName"
+                                value="<?= $emp['LastName'] ?? '' ?>">
                             </div>
                         </div>
 
                         <div class="form-row">
                             <div class="form-group">
-                                <label for="upPhone">Phone Number</label>
-                                <input type="tel" id="upPhone">
+                                
                             </div>
                             <div class="form-group">
                                 <label for="upDOB">Date of Birth <span class="required">*</span></label>
-                                <input type="date" id="upDOB" required>
+                                <input type="date" id="upDOB" name="upDOB"
+                                value="<?= $emp['DOB'] ?? '' ?>">
                             </div>
                         </div>
                     </div>
@@ -260,7 +324,7 @@
                         <div class="form-row">
                             <div class="form-group">
                                 <label for="upPosition">Position <span class="required">*</span></label>
-                                <select id="upPosition" required>
+                                <select id="upPosition" name="upPosition" required>
                                     <option value="">-- Select Position --</option>
                                     <option value="Chef">Chef</option>
                                     <option value="Cook">Cook</option>
@@ -271,21 +335,21 @@
                             </div>
                             <div class="form-group">
                                 <label for="upSalary">Annual Salary (USD) <span class="required">*</span></label>
-                                <input type="number" id="upSalary" required step="0.01" min="0">
+                                <input type="number" id="upSalary" name="upSalary" required step="0.01" min="0">
                             </div>
                         </div>
 
                         <div class="form-row">
                             <div class="form-group">
                                 <label for="upSupervisor">Supervisor <span class="required">*</span></label>
-                                <select id="upSupervisor" required>
+                                <select id="upSupervisor" name="upSupervisor" required>
                                     <option value="">-- Select Supervisor --</option>
                                     <option value="original-supervisor" selected>Original Supervisor</option>
                                 </select>
                             </div>
                             <div class="form-group">
                                 <label for="upDepartment">Department</label>
-                                <select id="upDepartment">
+                                <select id="upDepartment" name="upDepartment" required>
                                     <option value="">-- Select Department --</option>
                                     <option value="Kitchen">Kitchen</option>
                                     <option value="Front of House">Front of House</option>
