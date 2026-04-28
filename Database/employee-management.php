@@ -2,7 +2,10 @@
 <?php
 include 'db_connect.php';
 
-// Insert employee
+//====================================================================================
+//Insert employee
+//====================================================================================
+
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if (isset($_POST['firstName'])) {
         $first = $_POST['firstName'];
@@ -29,10 +32,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 }
 
-// ================================ ======================================
+// ================================ ====================================================
 // Query being performed when we enter employee ID and click on "Find Employee"
 // under Update Employee tab
-// =======================================================================
+// =====================================================================================
 // Check if serach key exists and is not an empty string
 
 $emp = null; // Array that stores employees' data
@@ -47,8 +50,11 @@ if (isset($_GET['search_id']) && $_GET['search_id'] !== "") {
     }
 }
 
-$searchResults = null; // returns multiple rows
+//=====================================================================================
+// Employee Search Result
+//=====================================================================================
 
+$searchResults = null; // returns multiple rows
 if (isset($_GET['search']) && $_GET['search'] !== "") {
     $search = $conn->real_escape_string($_GET['search']);
     // Query the database to obtain all columns from the Employee table 
@@ -61,7 +67,12 @@ if (isset($_GET['search']) && $_GET['search'] !== "") {
 
     $searchResults = $conn->query($sql);
 }
+
+
+//========================================================================================
 // Update employee
+//========================================================================================
+
 if (isset($_POST['upEmpID'])) {
     $id = $_POST['upEmpID'];
     $first = $_POST['upFirstName'];
@@ -87,7 +98,9 @@ if (isset($_POST['upEmpID'])) {
     $conn->query($sql);
 }
 ?>
-
+<!-- ******************************************************************************************************** -->
+<!--                                        EMPLOYEE MANAGEMENT INTERFACE                                     -->
+<!-- ******************************************************************************************************** -->
 
 <!DOCTYPE html>
 <html lang="en">
