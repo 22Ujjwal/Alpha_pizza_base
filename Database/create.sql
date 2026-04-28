@@ -2,26 +2,26 @@ CREATE DATABASE alpha_pizza_db;
 USE alpha_pizza_db;
 
 -- Create table for employees --
-CREATE TABLE EMPLOYEE
-(
-		EmployeeID 	INT 			NOT NULL,
-		StartDate 	DATE			NOT NULL,
-		SSN		INT			NOT NULL,
-		FirstName	VARCHAR(255)	NOT NULL,
-		LastName	VARCHAR(255)	NOT NULL,
-		Email		VARCHAR(255) 	NOT NULL 
-      			CHECK (Email like '%_@__%.__%'),
-		DOB		DATE			NOT NULL,
-		Salary		DECIMAL(8,2)		NOT NULL,
-		SupervisorID	INT			NOT NULL,
+CREATE TABLE EMPLOYEE (
+  EmployeeID INT NOT NULL AUTO_INCREMENT,
+  StartDate DATE NOT NULL,
+  SSN INT NOT NULL,
+  FirstName VARCHAR(255) NOT NULL,
+  LastName VARCHAR(255) NOT NULL,
+  Email VARCHAR(255) NOT NULL CHECK (Email like '%_@__%.__%'),
+  DOB DATE NOT NULL,
+  Salary DECIMAL(8,2) NOT NULL,
+  -- first employee in the system should not have a supervisor so supervisor id can be null -- 
+  SupervisorID INT, 
+  Position VARCHAR(255) NOT NULL DEFAULT 'Unassigned',
+  Department VARCHAR(255) NOT NULL DEFAULT 'Unassigned',
 
-		CONSTRAINT EMPLOYEE_PK
-			PRIMARY KEY(EmployeeID),
-		CONSTRAINT SUPER_EMPLOYEE_FK
-			FOREIGN KEY(SupervisorID) REFERENCES EMPLOYEE(EmployeeID)
-				ON DELETE RESTRICT	ON UPDATE CASCADE
+  PRIMARY KEY (EmployeeIemployeeD),
+
+  CONSTRAINT SUPER_EMPLOYEE_FK
+    FOREIGN KEY (SupervisorID) REFERENCES EMPLOYEE(EmployeeID)
+    ON DELETE RESTRICT ON UPDATE CASCADE
 );
-
 -- Create table for customers --
 CREATE TABLE CUSTOMER
 (
@@ -183,3 +183,8 @@ CONSTRAINT FILL_INGREDIENT_FK
 	FOREIGN KEY(IngredientID) REFERENCES INGREDIENT(IngredientID)
 		ON DELETE CASCADE		ON UPDATE CASCADE
 );
+
+
+
+
+
