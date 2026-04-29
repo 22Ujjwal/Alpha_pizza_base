@@ -49,7 +49,7 @@
                 <h2 class="card-title">Search Menu Items</h2>
                 
                 <div class="search-bar">
-                    <input type="text" id="searchInput" placeholder="Search by Item Name, ID, or Category...">
+                    <input type="text" id="searchInput" placeholder="Search by Item ID... (Name, Category, etc not ready...)">
                     <button class="btn btn-primary" onclick="searchItems()">Search</button>
                     <button class="btn btn-outline" onclick="resetSearch()">Reset</button>
                 </div>
@@ -68,7 +68,7 @@
                         </thead>
                         <tbody id="itemsTableBody">
                             <tr>
-                                <td colspan="6" class="text-center text-muted">
+                                <td id="currentList" colspan="6" class="text-center text-muted">
                                     Enter search criteria and click Search to view items
                                 </td>
                             </tr>
@@ -329,24 +329,62 @@
             evt.currentTarget.classList.add('active');
         }
 
+	function obtainID(){
+	    const itemID = localStorage.getItem("newItemID");
+	    if(itemID == null){
+		localStorage.setItem("newItemID", 0);
+        	return 0;
+	    }
+	    localStorage.setItem("newItemID", parseInt(itemID) + 1);
+	    return itemID;
+	}
+	
+	function searchItems(){
+	    const searchInput = document.getElementById("searchInput").value;
+	    
+	    const table = document.getElementById("itemsTableBody");
+	    table.innerHTML = "";
+	    
+	    for (let i = 0; i < localStorage.length; i++) {
+   		const itemString = localStorage.getItem(i)
+	        const item = JSON.parse(itemString); 
+		if(item.itemName.includes(searchInput) || item.itemCategory.includes(searchInput)){
+		    table.innerHTML += `
+            	    <tr>
+            		<td>${item.itemID}</td>
+            		<td>${item.itemName}</td>
+            		<td>${item.itemCategory}</td>
+            		<td>$${item.itemPrice}</td>
+            		<td>${item.itemAvailable == 1 ? "Yes" : "No"}</td>
+           	     </tr>
+	   	 `   ;		
+		}
+	    }
+
+	    //alert("Item Located at given id: " + item.itemName);
+	}
+	
 	function handleAddItem(event) {
 	    const itemName = document.getElementById("itemName").value;
 	    const itemCategory = document.getElementById("itemCategory").value;
 	    const itemPrice = document.getElementById("itemPrice").value;
 	    const itemAvailable = document.getElementById("itemAvailable").value;
 	    const itemDescription = document.getElementById("itemDescription").value;
+	    const itemID = obtainID();
 	    
 	    const newItem = {
-		//itemId needs to be added
+		itemID,
         	itemName,
         	itemCategory,
         	itemPrice,
         	itemAvailable,
         	itemDescription
     	    };
+	    
+	    const encodedItem = JSON.stringify(newItem);
+	    localStorage.setItem(itemID, encodedItem);
 
-	    inventory.push(newItem);
-	    alert("Item Added Successfully");
+	    alert("Item added at ItemID " + itemID + ": " + encodedItem);
 	}
 	
     </script>
