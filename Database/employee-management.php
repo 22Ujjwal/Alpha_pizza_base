@@ -2,7 +2,7 @@
 <?php
 include 'db_connect.php';
 
-//****************************** PHP ***************************** */
+//******************************       PHP       ***************************** */
 //********************************************** */
 // Delete employee
 //********************************************** */
@@ -128,6 +128,7 @@ if (isset($_POST['reassignSupervisor'])) {
     $empID = (int) $_POST['empToReassign'];
     $newSupID = (int) $_POST['newSupervisor'];
 
+    // This query updates the  employee's supervisor
     $sql = "UPDATE EMPLOYEE
             SET SupervisorID = $newSupID
             WHERE EmployeeID = $empID";
@@ -140,7 +141,8 @@ if (isset($_POST['reassignSupervisor'])) {
 }
 ?>
 
-
+<!--**********************************        INTERFACE        **********************************-->
+<!------------------------------------------------------------------------------------------------->
 <!DOCTYPE html>
 <html lang="en">
 
@@ -718,7 +720,7 @@ if (isset($_POST['reassignSupervisor'])) {
                                 <select id="newSupervisor" name="newSupervisor">
                                     <option value="">-- Select Supervisor --</option>
                                     <?php
-                                    // This return supervisor's ID and name without duplicate rows
+                                    // This returns supervisor's ID and name without duplicate rows
                                     $supervisors = $conn->query("SELECT EmployeeID, FirstName, LastName
                                                             FROM EMPLOYEE
                                                             WHERE Position = 'Supervisor'
@@ -734,6 +736,7 @@ if (isset($_POST['reassignSupervisor'])) {
                                 </select>
                             </div>
                         </div>
+                        <!--======================== UPDATE SUPERVISOR REASSIGNMENT =============================-->
                         <button class="btn btn-secondary" type="submit" name="reassignSupervisor">Update Supervisor
                             Assignment
                         </button>
