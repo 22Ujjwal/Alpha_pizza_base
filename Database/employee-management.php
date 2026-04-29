@@ -2,10 +2,33 @@
 <?php
 include 'db_connect.php';
 
-//====================================================================================
-//Insert employee
-//====================================================================================
+//****************************** PHP ***************************** */
+//********************************************** */
+// Delete employee
+//********************************************** */
+if (isset($_POST['deleteEmpID'])) {
+    $id = (int) $_POST['deleteEmpID'];
 
+    // Check if this employee supervises anyone
+    $check = $conn->query("SELECT EmployeeID FROM EMPLOYEE WHERE SupervisorID = $id");
+
+    if ($check && $check->num_rows > 0) {
+        echo "<p style='color:red;'>Cannot delete this employee because they supervise other employees.</p>";
+    } else {
+        $sql = "DELETE FROM EMPLOYEE WHERE EmployeeID = $id";
+
+        if ($conn->query($sql)) {
+            header("Location: employee-management.php?deleted=1");
+            exit();
+        } else {
+            echo "<p style='color:red;'>DELETE FAILED: " . $conn->error . "</p>";
+        }
+    }
+}
+
+//*************************************************** */
+// Insert employee
+//************************************************************* */
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if (isset($_POST['firstName'])) {
         $first = $_POST['firstName'];
@@ -16,26 +39,29 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $start = $_POST['startDate'];
         $position = $_POST['position'];
         $salary = $_POST['salary'];
-        $supervisor = $_POST['supervisor'];
+        // If the user did not select a supervisor (the case where the employee is the supervisor themselves),
+        // assign NULL to supervisor ID field.
+        $supervisor = ($_POST['supervisor'] === "") ? "NULL" : (int) $_POST['supervisor'];
         $department = $_POST['department'];
 
         $sql = "INSERT INTO EMPLOYEE 
         (FirstName, LastName, Email, DOB, SSN, StartDate, Position, Salary, SupervisorID, Department)
         VALUES 
-        ('$first', '$last', '$email', '$dob', '$ssn', '$start', '$position', '$salary', '$supervisor', '$department')";
+        ('$first', '$last', '$email', '$dob', '$ssn', '$start', '$position', '$salary', $supervisor, '$department')";
 
         if (!$conn->query($sql)) {
             die("<p style='color:red;'>SQL FAILED: " . $conn->error . "</p>");
         }
 
-        echo "<p style='color:green;'>EMPLOYEE ADDED</p>";
+        header("Location: employee-management.php?added=1");
+        exit();
     }
 }
 
-// ================================ ====================================================
+// ================================ ============================================
 // Query being performed when we enter employee ID and click on "Find Employee"
 // under Update Employee tab
-// =====================================================================================
+// =============================================================================
 // Check if serach key exists and is not an empty string
 
 $emp = null; // Array that stores employees' data
@@ -50,11 +76,8 @@ if (isset($_GET['search_id']) && $_GET['search_id'] !== "") {
     }
 }
 
-//=====================================================================================
-// Employee Search Result
-//=====================================================================================
-
 $searchResults = null; // returns multiple rows
+
 if (isset($_GET['search']) && $_GET['search'] !== "") {
     $search = $conn->real_escape_string($_GET['search']);
     // Query the database to obtain all columns from the Employee table 
@@ -67,12 +90,9 @@ if (isset($_GET['search']) && $_GET['search'] !== "") {
 
     $searchResults = $conn->query($sql);
 }
-
-
-//========================================================================================
-// Update employee
-//========================================================================================
-
+//***************************************************************** */
+//  Update employee
+//****************************************************************** */
 if (isset($_POST['upEmpID'])) {
     $id = $_POST['upEmpID'];
     $first = $_POST['upFirstName'];
@@ -83,24 +103,43 @@ if (isset($_POST['upEmpID'])) {
     $supervisor = $_POST['upSupervisor'];
     $department = $_POST['upDepartment'];
 
+    // New employee not assigned a supervisor will have the supervisor filed 
+    // passed as NULL. Otherwise typecast into integer
+    $supervisorSQL = ($supervisor === "") ? "NULL" : (int) $supervisor;
+
     // Query to update employee's information based on input
     $sql = "UPDATE EMPLOYEE 
             SET FirstName='$first',
                 LastName='$last',
                 Email='$email',
-                
                 Position='$position',
                 Salary='$salary',
-                SupervisorID='$supervisor',
+                SupervisorID=$supervisorSQL, 
                 Department='$department'
             WHERE EmployeeID=$id";
 
     $conn->query($sql);
 }
+
+//**************************************************************** */
+//  Reassign supervisor
+//****************************************************************** */
+if (isset($_POST['reassignSupervisor'])) {
+    $empID = (int) $_POST['empToReassign'];
+    $newSupID = (int) $_POST['newSupervisor'];
+
+    $sql = "UPDATE EMPLOYEE
+            SET SupervisorID = $newSupID
+            WHERE EmployeeID = $empID";
+
+    if ($conn->query($sql)) {
+        echo "<p style='color:green;'>Supervisor updated successfully.</p>";
+    } else {
+        echo "<p style='color:red;'>SQL FAILED: " . $conn->error . "</p>";
+    }
+}
 ?>
-<!-- ******************************************************************************************************** -->
-<!--                                        EMPLOYEE MANAGEMENT INTERFACE                                     -->
-<!-- ******************************************************************************************************** -->
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -307,9 +346,26 @@ if (isset($_POST['upEmpID'])) {
                             </div>
                             <div class="form-group">
                                 <label for="supervisor">Supervisor <span class="required">*</span></label>
-                                <select id="supervisor" name="supervisor" required>
+                                <select id="supervisor" name="supervisor">
                                     <option value="">-- Select Supervisor --</option>
-                                    <option value="1" selected>Original Supervisor</option>
+                                    <?php
+                                    // Query to obtain row(s) of supervisor(s)
+                                    $supervisors = $conn->query("
+                                            SELECT EmployeeID, FirstName, LastName
+                                            FROM EMPLOYEE
+                                            WHERE Position = 'Supervisor'
+                                            ORDER BY LastName
+                                        ");
+
+                                    while ($row = $supervisors->fetch_assoc()) { // grabs next row
+                                    //checks if the current employee's supervisor matches this row's ID
+                                        $selected = (($emp['SupervisorID'] ?? '') == $row['EmployeeID']) ? 'selected' : '';
+                                        // Display drop down options
+                                        echo "<option value='{$row['EmployeeID']}' $selected>
+                                            {$row['EmployeeID']} - {$row['FirstName']} {$row['LastName']}
+                                        </option>";
+                                    }
+                                    ?>
                                 </select>
                             </div>
                         </div>
@@ -347,7 +403,7 @@ if (isset($_POST['upEmpID'])) {
                 <h2 class="card-title">Update Employee Information</h2>
 
                 <!--input type="text" id="updateEmployeeSearchInput" placeholder="Search employee by Name or ID...">
-                    <!--button class="btn btn-primary" onclick="findEmployeeToUpdate()">Find Employee</button>-->
+                    <! button class="btn btn-primary" onclick="findEmployeeToUpdate()">Find Employee</button>-->
 
                 <form method="GET">
                     <div class="search-bar">
@@ -417,6 +473,9 @@ if (isset($_POST['upEmpID'])) {
                                     <option value="Cashier">Cashier</option>
                                     <option value="Manager">Manager</option>
                                     <option value="Supervisor">Supervisor</option>
+                                    <option value="Delivery Driver">Delivery Driver</option>
+                                    <option value="HR Staff">HR Staff</option>
+                                    <option value="IT Staff">IT Staff</option>
                                 </select>
                             </div>
                             <div class="form-group">
@@ -428,10 +487,25 @@ if (isset($_POST['upEmpID'])) {
                         <div class="form-row">
                             <div class="form-group">
                                 <label for="upSupervisor">Supervisor <span class="required">*</span></label>
-                                <select id="upSupervisor" name="upSupervisor" required>
-                                    <option value="">-- Select Supervisor --</option>
-                                    <option value="1" selected>Original Supervisor</option>
-                                </select>
+                                    <select id="upSupervisor" name="upSupervisor">
+                                        <option value="">-- Select Supervisor --</option>
+
+                                        <?php
+                                        // Query to select supervisor from the table
+                                        $supList = $conn->query("
+                                            SELECT EmployeeID, FirstName, LastName
+                                            FROM EMPLOYEE
+                                            WHERE Position IN ('Supervisor')
+                                            ORDER BY LastName
+                                        ");
+
+                                        while ($row = $supList->fetch_assoc()) {
+                                            echo "<option value='{$row['EmployeeID']}'>
+                                                {$row['EmployeeID']} - {$row['FirstName']} {$row['LastName']}
+                                                </option>";
+                                        }
+                                        ?>
+                                    </select>
                             </div>
                             <div class="form-group">
                                 <label for="upDepartment">Department</label>
@@ -440,6 +514,8 @@ if (isset($_POST['upEmpID'])) {
                                     <option value="Kitchen">Kitchen</option>
                                     <option value="Front of House">Front of House</option>
                                     <option value="Management">Management</option>
+                                    <option value="Delivery">Delivery</option>
+                                    <option value="Admin">Admin</option>
                                 </select>
                             </div>
                         </div>
@@ -450,10 +526,27 @@ if (isset($_POST['upEmpID'])) {
                             <small class="text-muted">Start date cannot be modified</small>
                         </div>
                     </div>
-
                     <div class="btn-group">
-                        <button type="submit" class="btn btn-success">Save Changes</button>
-                        <button type="button" class="btn btn-outline" onclick="cancelUpdateEmployee()">Cancel</button>
+                        <!-- Save Changes button-->
+                    <button type="submit" class="btn btn-success">Save Changes</button>
+                            <!-- Delete Employee button-->
+                    <button type="submit"
+                            name="deleteEmpID"
+                            value="<?= $emp['EmployeeID'] ?? '' ?>"
+                            class="btn btn-danger"
+                            formnovalidate
+                            onclick="return confirm('Delete this employee?');">Delete Employee</button>
+                            <!-- Cancel button-->
+                    <a href="employee-management.php" class="btn btn-outline">Cancel</a>
+                </div>
+
+
+                        <!--  Redirect to main employee management page after clicking on cancel -->
+                        <script>
+                        function cancelUpdateEmployee() {
+                            window.location.href = "employee-management.php";
+                        }
+                        </script>
                     </div>
                 </form>
 
@@ -513,7 +606,11 @@ if (isset($_POST['upEmpID'])) {
                                 echo "<td>" . $row["Salary"] . "</td>";
                                 echo "<td>" . $row["StartDate"] . "</td>";
                                 echo "<td>" . $row["SupervisorID"] . "</td>";
-                                echo "<td>Edit</td>";
+                                echo "<td>
+                                <a class='btn btn-small btn-outline'
+                                href='employee-management.php?search_id=" . $row['EmployeeID'] . "'>
+                                Edit</a>
+                                </td>";
                                 echo "</tr>";
                             }
                             ?>
@@ -547,7 +644,7 @@ if (isset($_POST['upEmpID'])) {
                             </tr>
                         </thead>
                         <tbody id="supervisorTableBody">
-                            <tr>
+                            
                                 <?php
                                 // This query return the supervisor's id, name, position, department, and salary
                                 $sql = "SELECT 
@@ -556,13 +653,14 @@ if (isset($_POST['upEmpID'])) {
                                     s.Position,
                                     s.Department,
                                     s.Salary,
-                                    COUNT(e.EmployeeID) AS SuperviseeCount
+                                    COUNT(e.EmployeeID) AS DirectReports
                                 FROM EMPLOYEE s
-                                -- Use Left join to display all supervisors including those with 0 supervisee
+                                -- Use Left join to display all supervisors including those with 0 supervisee (direct reports)
                                 LEFT JOIN EMPLOYEE e 
                                     ON e.SupervisorID = s.EmployeeID
+                                WHERE s.Position = 'Supervisor'
                                 GROUP BY s.EmployeeID, s.FirstName, s.LastName, s.Position, s.Department, s.Salary
-                                HAVING SuperviseeCount > 0";
+                                ORDER BY s.LastName";
 
                                 $result = $conn->query($sql);
 
@@ -575,14 +673,20 @@ if (isset($_POST['upEmpID'])) {
                                         echo "<td>" . $row["Department"] . "</td>";
                                         echo "<td>" . $row["DirectReports"] . "</td>";
                                         echo "<td>" . $row["Salary"] . "</td>";
-                                        echo "<td>Edit</td>";
+                                        echo
+                                            "<td>
+                                        <a class='btn btn-small btn-outline'
+                                        href='employee-management.php?search_id=" . $row['SupervisorID'] . "'>
+                                        Edit
+                                        </a>
+                                        </td>";
                                         echo "</tr>";
                                     }
                                 } else {
                                     echo "<tr><td colspan='7' class='text-center text-muted'>No supervisors loaded.</td></tr>";
                                 }
                                 ?>
-                            </tr>
+                        
                         </tbody>
                     </table>
                 </div>
@@ -590,49 +694,50 @@ if (isset($_POST['upEmpID'])) {
                 <div style="margin-top: 2rem; padding: 1.5rem; background: var(--light-bg); border-radius: 8px;">
                     <h3 style="margin-bottom: 1rem; color: var(--primary-color);">Reassign Supervisor</h3>
                     <p class="text-muted mb-2">Change an employee's supervisor</p>
+                    <form method="POST">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="empToReassign">Select Employee <span class="required">*</span></label>
+                                <select id="empToReassign" name="empToReassign">
+                                    <option value="">-- Select Employee --</option>
+                                    <?php
+                                    $employees = $conn->query("SELECT EmployeeID, FirstName, LastName FROM EMPLOYEE ORDER BY EmployeeID");
 
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="empToReassign">Select Employee <span class="required">*</span></label>
-                            <select id="empToReassign">
-                                <option value="">-- Select Employee --</option>
-                                <?php
-                                $employees = $conn->query("SELECT EmployeeID, FirstName, LastName FROM EMPLOYEE ORDER BY EmployeeID");
-
-                                while ($row = $employees->fetch_assoc()) {
-                                    echo "<option value='" . $row['EmployeeID'] . "'>" .
-                                        $row['EmployeeID'] . " - " .
-                                        $row['FirstName'] . " " .
-                                        $row['LastName'] .
-                                        "</option>";
-                                }
-                                ?>
-                            </select>
+                                    while ($row = $employees->fetch_assoc()) {
+                                        echo "<option value='" . $row['EmployeeID'] . "'>" .
+                                            $row['EmployeeID'] . " - " .
+                                            $row['FirstName'] . " " .
+                                            $row['LastName'] .
+                                            "</option>";
+                                    }
+                                    ?>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="newSupervisor">New Supervisor <span class="required">*</span></label>
+                                <select id="newSupervisor" name="newSupervisor">
+                                    <option value="">-- Select Supervisor --</option>
+                                    <?php
+                                    // This return supervisor's ID and name without duplicate rows
+                                    $supervisors = $conn->query("SELECT EmployeeID, FirstName, LastName
+                                                            FROM EMPLOYEE
+                                                            WHERE Position = 'Supervisor'
+                                                            ORDER BY LastName");
+                                    while ($row = $supervisors->fetch_assoc()) {
+                                        echo "<option value='" . $row['EmployeeID'] . "'>" .
+                                            $row['EmployeeID'] . " - " .
+                                            $row['FirstName'] . " " .
+                                            $row['LastName'] .
+                                            "</option>";
+                                    }
+                                    ?>
+                                </select>
+                            </div>
                         </div>
-                        <div class="form-group">
-                            <label for="newSupervisor">New Supervisor <span class="required">*</span></label>
-                            <select id="newSupervisor">
-                                <option value="">-- Select Supervisor --</option>
-                                <?php
-                                // This return supervisor's ID and name without duplicate rows
-                                $supervisors = $conn->query("SELECT DISTINCT s.EmployeeID, s.FirstName, s.LastName
-                                                            FROM EMPLOYEE s
-                                                            JOIN EMPLOYEE e ON e.SupervisorID = s.EmployeeID
-                                                            ORDER BY s.LastName");
-                                while ($row = $supervisors->fetch_assoc()) {
-                                    echo "<option value='" . $row['EmployeeID'] . "'>" .
-                                        $row['EmployeeID'] . " - " .
-                                        $row['FirstName'] . " " .
-                                        $row['LastName'] .
-                                        "</option>";
-                                }
-                                ?>
-                            </select>
-                        </div>
-                    </div>
-
-                    <button class="btn btn-secondary" onclick="reassignSupervisor()">Update Supervisor
-                        Assignment</button>
+                        <button class="btn btn-secondary" type="submit" name="reassignSupervisor">Update Supervisor
+                            Assignment
+                        </button>
+                    </form>
                     <div id="reassignMessage" class="hidden mt-2"></div>
                 </div>
             </div>
@@ -653,5 +758,4 @@ if (isset($_POST['upEmpID'])) {
         }
     </script>
 </body>
-
 </html>
