@@ -75,6 +75,7 @@
                         </tbody>
                     </table>
                 </div>
+		<div id="deleteItemMessage" class="hidden mt-2"></div>
             </div>
         </div>
 
@@ -446,9 +447,8 @@
                 	itemID: deleteID,
                     }),
                 });
-
+		
                 showMessage('deleteItemMessage', 'Item deleted successfully.');
-                await searchItems();
             } catch (error) {
                 showMessage('deleteItemMessage', `Delete failed: ${error.message}`, true);
             }
