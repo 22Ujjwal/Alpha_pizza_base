@@ -150,7 +150,7 @@ if (isset($_POST['reassignSupervisor'])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Employee Management - Pizza Company Database</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="../styles.css">
 </head>
 
 <body>
@@ -162,11 +162,11 @@ if (isset($_POST['reassignSupervisor'])) {
 
     <!-- Navigation -->
     <nav>
-        <a href="index.html">Dashboard</a>
-        <a href="menu.html">Menu</a>
-        <a href="orders.html">Orders</a>
-        <a href="inventory-management.html">Inventory Management</a>
-        <a href="employee-management.html" class="active">Employee Management</a>
+        <a href="../index.html">Dashboard</a>
+        <a href="../menu.html">Menu</a>
+        <a href="../orders.html">Orders</a>
+        <a href="../inventory-management.html">Inventory Management</a>
+        <a href="employee-management.php" class="active">Employee Management</a>
     </nav>
 
     <!-- Main Content -->
