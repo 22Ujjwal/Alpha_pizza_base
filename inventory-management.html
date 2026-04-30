@@ -329,63 +329,266 @@
             evt.currentTarget.classList.add('active');
         }
 
-	function obtainID(){
-	    const itemID = localStorage.getItem("newItemID");
-	    if(itemID == null){
-		localStorage.setItem("newItemID", 0);
-        	return 0;
-	    }
-	    localStorage.setItem("newItemID", parseInt(itemID) + 1);
-	    return itemID;
-	}
-	
-	function searchItems(){
-	    const searchInput = document.getElementById("searchInput").value;
-	    
-	    const table = document.getElementById("itemsTableBody");
-	    table.innerHTML = "";
-	    
-	    for (let i = 0; i < localStorage.length; i++) {
-   		const itemString = localStorage.getItem(i)
-	        const item = JSON.parse(itemString); 
-		if(item.itemName.includes(searchInput) || item.itemCategory.includes(searchInput)){
-		    table.innerHTML += `
-            	    <tr>
-            		<td>${item.itemID}</td>
-            		<td>${item.itemName}</td>
-            		<td>${item.itemCategory}</td>
-            		<td>$${item.itemPrice}</td>
-            		<td>${item.itemAvailable == 1 ? "Yes" : "No"}</td>
-           	     </tr>
-	   	 `   ;		
-		}
-	    }
+        const INVENTORY_API_BASE = './api/inventory';
 
-	    //alert("Item Located at given id: " + item.itemName);
-	}
-	
-	function handleAddItem(event) {
-	    const itemName = document.getElementById("itemName").value;
-	    const itemCategory = document.getElementById("itemCategory").value;
-	    const itemPrice = document.getElementById("itemPrice").value;
-	    const itemAvailable = document.getElementById("itemAvailable").value;
-	    const itemDescription = document.getElementById("itemDescription").value;
-	    const itemID = obtainID();
-	    
-	    const newItem = {
-		itemID,
-        	itemName,
-        	itemCategory,
-        	itemPrice,
-        	itemAvailable,
-        	itemDescription
-    	    };
-	    
-	    const encodedItem = JSON.stringify(newItem);
-	    localStorage.setItem(itemID, encodedItem);
+        async function apiRequest(url, options = {}) {
+            const response = await fetch(url, options);
+            const payload = await response.json();
 
-	    alert("Item added at ItemID " + itemID + ": " + encodedItem);
-	}
+            if (!response.ok || !payload.success) {
+                throw new Error(payload.message || 'Request failed');
+            }
+
+            return payload.data;
+        }
+
+        function formatCurrency(value) {
+            return `$${Number(value).toFixed(2)}`;
+        }
+
+        function showMessage(containerId, message, isError = false) {
+            const el = document.getElementById(containerId);
+            el.className = `mt-2 alert ${isError ? 'alert-error' : 'alert-success'}`;
+            el.textContent = message;
+            el.classList.remove('hidden');
+        }
+
+        const inventoryItemCache = {};
+
+        function renderItems(items) {
+            const table = document.getElementById('itemsTableBody');
+
+            items.forEach(item => {
+                inventoryItemCache[item.ItemID] = item;
+            });
+
+            if (!items.length) {
+                table.innerHTML = '<tr><td colspan="6" class="text-center text-muted">No items found.</td></tr>';
+                return;
+            }
+
+            table.innerHTML = items.map(item => `
+                <tr>
+                    <td>${item.ItemID}</td>
+                    <td>${item.ItemName}</td>
+                    <td>${item.Category}</td>
+                    <td>${formatCurrency(item.Price)}</td>
+                    <td>${Number(item.isAvailable) === 1 ? 'Yes' : 'No'}</td>
+                    <td>
+                        <button class="btn btn-small" onclick="prefillInventoryById(${item.ItemID})">Manage</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function prefillInventoryById(itemId) {
+            const item = inventoryItemCache[itemId];
+            if (!item) {
+                showMessage('updateInventoryMessage', 'Unable to load selected item.', true);
+                return;
+            }
+            prefillInventoryForm(item);
+        }
+
+        async function searchItems() {
+            try {
+                const searchInput = document.getElementById('searchInput').value.trim();
+                const data = await apiRequest(`${INVENTORY_API_BASE}/search_items.php?search=${encodeURIComponent(searchInput)}`);
+                renderItems(data.items || []);
+            } catch (error) {
+                showMessage('addItemMessage', `Search failed: ${error.message}`, true);
+            }
+        }
+
+        function resetSearch() {
+            document.getElementById('searchInput').value = '';
+            searchItems();
+        }
+
+        async function handleAddItem(event) {
+            event.preventDefault();
+
+            try {
+                const itemName = document.getElementById('itemName').value;
+                const itemCategory = document.getElementById('itemCategory').value;
+                const itemPrice = document.getElementById('itemPrice').value;
+                const itemAvailable = document.getElementById('itemAvailable').value;
+
+                await apiRequest(`${INVENTORY_API_BASE}/add_item.php`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        itemName,
+                        itemCategory,
+                        itemPrice,
+                        itemAvailable,
+                        itemStockQty: 0,
+                    }),
+                });
+
+                document.getElementById('addItemForm').reset();
+                showMessage('addItemMessage', 'Item added successfully.');
+                await searchItems();
+            } catch (error) {
+                showMessage('addItemMessage', `Add failed: ${error.message}`, true);
+            }
+        }
+
+        function prefillInventoryForm(item) {
+            document.getElementById('updateInventoryForm').classList.remove('hidden');
+            document.getElementById('invItemID').value = item.ItemID;
+            document.getElementById('invItemName').value = item.ItemName;
+            document.getElementById('invCurrentQty').value = item.ItemStockQty;
+            document.getElementById('invNewQty').value = item.ItemStockQty;
+            document.getElementById('invPrice').value = Number(item.Price).toFixed(2);
+            document.getElementById('invNewPrice').value = '';
+            document.getElementById('invAvailable').value = String(item.isAvailable);
+        }
+
+        async function searchInventory() {
+            try {
+                const searchInput = document.getElementById('inventorySearchInput').value.trim();
+                const data = await apiRequest(`${INVENTORY_API_BASE}/search_items.php?search=${encodeURIComponent(searchInput)}`);
+
+                if (!data.items || !data.items.length) {
+                    showMessage('updateInventoryMessage', 'No matching item found.', true);
+                    return;
+                }
+
+                prefillInventoryForm(data.items[0]);
+                showMessage('updateInventoryMessage', `Loaded item ${data.items[0].ItemID} for update.`);
+            } catch (error) {
+                showMessage('updateInventoryMessage', `Lookup failed: ${error.message}`, true);
+            }
+        }
+
+        async function handleUpdateInventory(event) {
+            event.preventDefault();
+
+            try {
+                const payload = {
+                    itemID: document.getElementById('invItemID').value,
+                    invNewQty: document.getElementById('invNewQty').value,
+                    invNewPrice: document.getElementById('invNewPrice').value,
+                    invAvailable: document.getElementById('invAvailable').value,
+                };
+
+                await apiRequest(`${INVENTORY_API_BASE}/update_inventory.php`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload),
+                });
+
+                showMessage('updateInventoryMessage', 'Inventory updated successfully.');
+                await searchItems();
+            } catch (error) {
+                showMessage('updateInventoryMessage', `Update failed: ${error.message}`, true);
+            }
+        }
+
+        function cancelInventoryEdit() {
+            document.getElementById('updateInventoryForm').classList.add('hidden');
+        }
+
+        function renderCategories(categories) {
+            const body = document.getElementById('categoriesTableBody');
+
+            if (!categories.length) {
+                body.innerHTML = '<tr><td colspan="3" class="text-center text-muted">No categories found.</td></tr>';
+                return;
+            }
+
+            body.innerHTML = categories.map(category => `
+                <tr>
+                    <td>${category.Category}</td>
+                    <td>${category.ItemCount}</td>
+                    <td><span class="text-muted">Derived from items</span></td>
+                </tr>
+            `).join('');
+        }
+
+        async function loadCategories() {
+            try {
+                const data = await apiRequest(`${INVENTORY_API_BASE}/list_categories.php`);
+                renderCategories(data.categories || []);
+            } catch (error) {
+                showMessage('categoryMessage', `Load failed: ${error.message}`, true);
+            }
+        }
+
+        function addCategory() {
+            showMessage('categoryMessage', 'Categories are derived from items. Add a new item with a new category name to create it.');
+        }
+
+        function renderIngredients(ingredients) {
+            const body = document.getElementById('ingredientsTableBody');
+
+            if (!ingredients.length) {
+                body.innerHTML = '<tr><td colspan="7" class="text-center text-muted">No ingredients found.</td></tr>';
+                return;
+            }
+
+            body.innerHTML = ingredients.map(ingredient => `
+                <tr>
+                    <td>${ingredient.IngredientID}</td>
+                    <td>${ingredient.IngredientName}</td>
+                    <td>${ingredient.QtyInStock}</td>
+                    <td>${ingredient.Unit}</td>
+                    <td>${ingredient.ReorderLevel}</td>
+                    <td>${ingredient.StockStatus}</td>
+                    <td><span class="text-muted">-</span></td>
+                </tr>
+            `).join('');
+        }
+
+        async function searchIngredients() {
+            try {
+                const searchInput = document.getElementById('ingredientSearchInput').value.trim();
+                const data = await apiRequest(`${INVENTORY_API_BASE}/search_ingredients.php?search=${encodeURIComponent(searchInput)}`);
+                renderIngredients(data.ingredients || []);
+            } catch (error) {
+                showMessage('categoryMessage', `Ingredient search failed: ${error.message}`, true);
+            }
+        }
+
+        function showAddIngredient() {
+            document.getElementById('addIngredientForm').classList.remove('hidden');
+        }
+
+        function hideAddIngredient() {
+            document.getElementById('addIngredientForm').classList.add('hidden');
+        }
+
+        async function handleAddIngredient(event) {
+            event.preventDefault();
+
+            try {
+                const payload = {
+                    ingredientName: document.getElementById('ingName').value,
+                    unit: document.getElementById('ingUnit').value,
+                    qtyInStock: document.getElementById('ingQtyInStock').value,
+                    reorderLevel: document.getElementById('ingReorderLevel').value,
+                };
+
+                await apiRequest(`${INVENTORY_API_BASE}/add_ingredient.php`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload),
+                });
+
+                hideAddIngredient();
+                event.target.reset();
+                await searchIngredients();
+            } catch (error) {
+                showMessage('categoryMessage', `Add ingredient failed: ${error.message}`, true);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            searchItems();
+            loadCategories();
+            searchIngredients();
+        });
 	
     </script>
 
