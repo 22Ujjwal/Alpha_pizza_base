@@ -329,7 +329,7 @@
             evt.currentTarget.classList.add('active');
         }
 
-        const INVENTORY_API_BASE = './api/inventory';
+        const INVENTORY_API_URL = './api/inventory.php';
 
         async function apiRequest(url, options = {}) {
             const response = await fetch(url, options);
@@ -393,7 +393,7 @@
         async function searchItems() {
             try {
                 const searchInput = document.getElementById('searchInput').value.trim();
-                const data = await apiRequest(`${INVENTORY_API_BASE}/search_items.php?search=${encodeURIComponent(searchInput)}`);
+                const data = await apiRequest(`${INVENTORY_API_URL}?action=search&search=${encodeURIComponent(searchInput)}`);
                 renderItems(data.items || []);
             } catch (error) {
                 showMessage('addItemMessage', `Search failed: ${error.message}`, true);
@@ -414,10 +414,11 @@
                 const itemPrice = document.getElementById('itemPrice').value;
                 const itemAvailable = document.getElementById('itemAvailable').value;
 
-                await apiRequest(`${INVENTORY_API_BASE}/add_item.php`, {
+                await apiRequest(`${INVENTORY_API_URL}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
+                        action: 'add',
                         itemName,
                         itemCategory,
                         itemPrice,
@@ -448,7 +449,7 @@
         async function searchInventory() {
             try {
                 const searchInput = document.getElementById('inventorySearchInput').value.trim();
-                const data = await apiRequest(`${INVENTORY_API_BASE}/search_items.php?search=${encodeURIComponent(searchInput)}`);
+                const data = await apiRequest(`${INVENTORY_API_URL}?action=search&search=${encodeURIComponent(searchInput)}`);
 
                 if (!data.items || !data.items.length) {
                     showMessage('updateInventoryMessage', 'No matching item found.', true);
@@ -473,7 +474,7 @@
                     invAvailable: document.getElementById('invAvailable').value,
                 };
 
-                await apiRequest(`${INVENTORY_API_BASE}/update_inventory.php`, {
+                await apiRequest(`${INVENTORY_API_URL}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload),
@@ -509,7 +510,7 @@
 
         async function loadCategories() {
             try {
-                const data = await apiRequest(`${INVENTORY_API_BASE}/list_categories.php`);
+                const data = await apiRequest(`${INVENTORY_API_URL}?action=categories`);
                 renderCategories(data.categories || []);
             } catch (error) {
                 showMessage('categoryMessage', `Load failed: ${error.message}`, true);
@@ -544,7 +545,7 @@
         async function searchIngredients() {
             try {
                 const searchInput = document.getElementById('ingredientSearchInput').value.trim();
-                const data = await apiRequest(`${INVENTORY_API_BASE}/search_ingredients.php?search=${encodeURIComponent(searchInput)}`);
+                const data = await apiRequest(`${INVENTORY_API_URL}?action=search_ingredients&search=${encodeURIComponent(searchInput)}`);
                 renderIngredients(data.ingredients || []);
             } catch (error) {
                 showMessage('categoryMessage', `Ingredient search failed: ${error.message}`, true);
@@ -570,10 +571,10 @@
                     reorderLevel: document.getElementById('ingReorderLevel').value,
                 };
 
-                await apiRequest(`${INVENTORY_API_BASE}/add_ingredient.php`, {
+                await apiRequest(`${INVENTORY_API_URL}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload),
+                    body: JSON.stringify(Object.assign({ action: 'add_ingredient' }, payload)),
                 });
 
                 hideAddIngredient();
