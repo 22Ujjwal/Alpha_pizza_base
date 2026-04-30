@@ -1,6 +1,6 @@
 <?php
 // ---------------------------------- ASSIGNMENT 5 -------------------------------------------
-require_once 'config.php';
+require_once 'api/config.php';
 $conn = get_db_connection();
 
 $results = null;
