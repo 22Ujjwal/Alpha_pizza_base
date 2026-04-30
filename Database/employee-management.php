@@ -1,6 +1,7 @@
 <!-- Removed "Phone" attribute since it was not an attribute of the Emplpoyee relation -->
 <?php
-include 'db_connect.php';
+require_once 'config.php';
+$conn = get_db_connection();
 
 //******************************       PHP       ***************************** */
 //********************************************** */
