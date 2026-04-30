@@ -280,6 +280,7 @@
                 <div class="mt-2">
                     <button class="btn btn-secondary" onclick="showAddIngredient()">➕ Add New Ingredient</button>
                 </div>
+		<div id="deleteIngredientMessage" class="hidden mt-2"></div>
             </div>
 
             <div id="addIngredientForm" class="card hidden">
@@ -557,7 +558,9 @@
                     <td>${ingredient.Unit}</td>
                     <td>${ingredient.ReorderLevel}</td>
                     <td>${ingredient.StockStatus}</td>
-                    <td><span class="text-muted">-</span></td>
+		    <td>
+			<button class="btn btn-small" onclick="handleDeleteIngredient(${ingredient.IngredientID})">Delete</button>
+                    </td>
                 </tr>
             `).join('');
         }
@@ -605,7 +608,22 @@
             }
         }
 
-	
+	async function handleDeleteIngredient(deleteID) {
+            try {
+                await apiRequest(`${INVENTORY_API_URL}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'delete_ingredient',
+                	ingredientID: deleteID,
+                    }),
+                });
+		
+                showMessage('deleteIngredientMessage', 'Ingredient deleted successfully.');
+            } catch (error) {
+                showMessage('deleteIngredientMessage', `Delete failed: ${error.message}`, true);
+            }
+        }
 
         document.addEventListener('DOMContentLoaded', () => {
             searchItems();
