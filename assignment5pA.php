@@ -30,9 +30,9 @@ if (isset($_GET['firstName']) || isset($_GET['lastName'])) {
 
     $stmt->execute();
     // get result
-    $results = $stmt->get_result();
+    $results = $stmt->get_result(); */
 }
-?> */
+?> 
 
 <!DOCTYPE html>
 <html>
