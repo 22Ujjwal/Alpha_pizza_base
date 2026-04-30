@@ -40,7 +40,7 @@ if (isset($_GET['firstName']) || isset($_GET['lastName'])) {
     <title>Assignment 5 SQL Injection</title>
 </head>
 <body>
-    <h1>Assignment 5 Part A</h1>
+    <h1>Assignment 5 SQL Injection</h1>
     <form method="GET">
         <label>First Name:</label>
         <input type="text" name="firstName">
