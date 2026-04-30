@@ -31,47 +31,94 @@
             <button class="btn btn-secondary" onclick="window.location.href='index.html'">Switch User</button>            
         </div>
 
-        <p class="header-subtitle"><b>Order Total: $[total]</b></p>
+        <p class="header-subtitle"><b>Order Total: $<span id="cart-total">0.00</span></b></p>
 
         <button class="btn btn-secondary" onclick="window.location.href='menu.html'">Back to Menu</button>    
         <button class="btn btn-primary" onclick="window.location.href='index.html'">Place Order</button>    
         <button class="btn btn-danger" onclick="window.location.href='index.html'">Cancel Order</button>    
         <!-- Cart -->
         
-        <div class="dashboard-grid">
-            <!-- Cart Card for an Item -->                                
-            <div class="dashboard-card">                    
-                    <h3>Item 1</h3>                                 
-                    <p>[current Quantity] x <i>Price</i>: <b>[subtotal]</b></p>
-                    <h4>Ingredients:</h4>
-                    <p>Ingredient1, Ingredient2, Ingredient3</p>                    
-                    <div class='quantity'>
-                        
-                        <label for="newQuantity">Update Quantity</label>
-                        <form method="POST" action="cart.html">
-                            <div style="display: flex; gap: 0.5rem; width:40%; margin:auto">
-                                <input type="hidden" name="item" value="Item1">             
-                                <input type="text" id="newQuantity" name="newQuantity" placeholder="[existing quantity]"> 
-                                <button type="submit" class="btn btn-primary btn-small">Update Quantity</button>
-                            </div>                        
-                        </form>
-                    </div>
-                    <br>
-                    <div class='removeFromCartButton'>
-                        <form method="POST" action="cart.html">
-                            <input type="hidden" name="item" value="Item1">
-                            <button class="btn-danger" type="submit"> Remove from cart </button>
-                        </form>
-                    </div>
-                    
-            </div>
-        </div>        
+        <div class="dashboard-grid" id="cart-container"></div>    
     </div>
 
     <!-- Footer -->
     <footer>
         <p>&copy; 2026 Alpha Pizza Base Database System.</p>
     </footer>
+
+    <script>
+        function renderCart() {
+            // 1. Get the cart from LocalStorage
+            let cart = JSON.parse(localStorage.getItem('alphaPizzaCart')) || [];
+            const container = document.getElementById('cart-container');
+            const totalDisplay = document.getElementById('cart-total');
+            
+            container.innerHTML = ''; // Clear container
+            let grandTotal = 0;
+
+            if (cart.length === 0) {
+                container.innerHTML = '<p style="padding: 20px;">Your cart is currently empty.</p>';
+                totalDisplay.innerText = '0.00';
+                return;
+            }
+
+            // 2. Loop through the cart and build the HTML
+            const cartHtml = cart.map((item, index) => {
+                let itemSubtotal = item.price * item.quantity;
+                grandTotal += itemSubtotal;
+
+            return `
+                <div class="dashboard-card" style="text-align: center;">                    
+                    <h3>${item.name}</h3>                                
+                    <p>${item.quantity} x <i>$${Number(item.price).toFixed(2)}</i>: <b>$${itemSubtotal.toFixed(2)}</b></p>
+                    <h4>Ingredients:</h4>
+                    <p>${item.ingredients}</p>                    
+                    
+                    <div class='quantity' style="margin-top: 15px;">
+                        <label>Update Quantity</label>
+                        <div style="display: flex; gap: 0.5rem; justify-content: center; align-items: center; margin-top: 5px;">
+                            <input type="number" id="qty-${index}" value="${item.quantity}" min="1" style="width: 60px; padding: 5px;"> 
+                            
+                            <button onclick="updateQuantity('${item.id}', document.getElementById('qty-${index}').value)" class="btn btn-primary" style="width: max-content; padding: 6px 15px;">Update</button>
+                        </div>                        
+                    </div>
+                    <br>
+                    <div class='removeFromCartButton'>
+                        <button onclick="removeFromCart('${item.id}')" class="btn btn-danger" style="width: max-content; margin: 0 auto; padding: 8px 20px;"> Remove from cart </button>
+                    </div>                    
+                </div>
+            `;
+            }).join('');
+
+            // 3. Update the screen
+            container.innerHTML = cartHtml;
+            totalDisplay.innerText = grandTotal.toFixed(2);
+        }
+
+        // --- CART ACTIONS ---
+
+        function updateQuantity(id, newQuantity) {
+            let cart = JSON.parse(localStorage.getItem('alphaPizzaCart')) || [];
+            let item = cart.find(i => i.id === id);
+            
+            if (item && newQuantity > 0) {
+                item.quantity = parseInt(newQuantity);
+                localStorage.setItem('alphaPizzaCart', JSON.stringify(cart));
+                renderCart(); // Redraw the screen to update totals
+            }
+        }
+
+        function removeFromCart(id) {
+            let cart = JSON.parse(localStorage.getItem('alphaPizzaCart')) || [];
+            // Filter out the item we want to delete
+            cart = cart.filter(item => item.id !== id); 
+            localStorage.setItem('alphaPizzaCart', JSON.stringify(cart));
+            renderCart(); // Redraw the screen
+        }
+
+        // Run this function immediately when the page loads
+        document.addEventListener('DOMContentLoaded', renderCart);
+    </script>
 
 </body>
 </html>
