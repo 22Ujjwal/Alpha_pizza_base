@@ -135,7 +135,7 @@ try {
             $del = $conn->prepare('DELETE FROM ITEM WHERE ItemID = ?');
             $del->bind_param('i',$id); $del->execute();
 
-            json_success(['deleted'=> $id], 'Item deleted');
+            json_success('Item deleted');
             break;
 
         case 'categories':
@@ -168,6 +168,19 @@ try {
             $stmt->bind_param('idsds',$next,$reorder,$name,$qty,$unit);
             $stmt->execute();
             json_success(['IngredientID'=>$next],'Ingredient added',201);
+            break;
+
+	case 'delete_ingredient':
+            if ($method !== 'POST' && $method !== 'DELETE') json_error('Use POST/DELETE for delete',405);
+
+            $idRaw = get_param($input, 'ingredientID');
+            if ($idRaw === null || !ctype_digit($idRaw)) json_error('ingredientID required',400);
+            $id = (int)$idRaw;
+
+            $del = $conn->prepare('DELETE FROM INGREDIENT WHERE IngredientID = ?');
+            $del->bind_param('i',$id); $del->execute();
+
+            json_success(['message' => 'Ingredient deleted']);
             break;
 
         default:
