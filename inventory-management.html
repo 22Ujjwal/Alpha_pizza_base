@@ -19,7 +19,7 @@
         <a href="menu.html">Menu</a>
         <a href="orders.html">Orders</a>
         <a href="inventory-management.html" class="active">Inventory Management</a>
-        <a href="Database/employee-management.php">Employee Management</a>
+        <a href="employee-management.html">Employee Management</a>
     </nav>
 
     <!-- Main Content -->
@@ -376,6 +376,7 @@
                     <td>${Number(item.isAvailable) === 1 ? 'Yes' : 'No'}</td>
                     <td>
                         <button class="btn btn-small" onclick="prefillInventoryById(${item.ItemID})">Manage</button>
+			<button class="btn btn-small" onclick="handleDeleteItem(${item.ItemID})">Delete</button>
                     </td>
                 </tr>
             `).join('');
@@ -435,6 +436,24 @@
             }
         }
 
+	async function handleDeleteItem(deleteID) {
+            try {
+                await apiRequest(`${INVENTORY_API_URL}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'delete',
+                	itemID: deleteID,
+                    }),
+                });
+
+                showMessage('deleteItemMessage', 'Item deleted successfully.');
+                await searchItems();
+            } catch (error) {
+                showMessage('deleteItemMessage', `Delete failed: ${error.message}`, true);
+            }
+        }
+
         function prefillInventoryForm(item) {
             document.getElementById('updateInventoryForm').classList.remove('hidden');
             document.getElementById('invItemID').value = item.ItemID;
@@ -468,6 +487,7 @@
 
             try {
                 const payload = {
+		    action: 'update',
                     itemID: document.getElementById('invItemID').value,
                     invNewQty: document.getElementById('invNewQty').value,
                     invNewPrice: document.getElementById('invNewPrice').value,
@@ -584,6 +604,8 @@
                 showMessage('categoryMessage', `Add ingredient failed: ${error.message}`, true);
             }
         }
+
+	
 
         document.addEventListener('DOMContentLoaded', () => {
             searchItems();
