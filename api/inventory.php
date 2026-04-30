@@ -135,7 +135,7 @@ try {
             $del = $conn->prepare('DELETE FROM ITEM WHERE ItemID = ?');
             $del->bind_param('i',$id); $del->execute();
 
-            json_success('Item deleted');
+            json_success(['message' => 'Item deleted']);
             break;
 
         case 'categories':
@@ -176,6 +176,15 @@ try {
             $idRaw = get_param($input, 'ingredientID');
             if ($idRaw === null || !ctype_digit($idRaw)) json_error('ingredientID required',400);
             $id = (int)$idRaw;
+
+            // check references in ORDERDETAIL_INGREDIENT and CONTAIN
+            $check1 = $conn->prepare('SELECT IngredientID FROM ORDERDETAIL_INGREDIENT WHERE IngredientID = ? LIMIT 1');
+            $check1->bind_param('i',$id); $check1->execute();
+            if ($check1->get_result()->num_rows > 0) json_error('Cannot delete ingredient: referenced by order details',409);
+
+            $check2 = $conn->prepare('SELECT IngredientID FROM CONTAIN WHERE IngredientID = ? LIMIT 1');
+            $check2->bind_param('i',$id); $check2->execute();
+            if ($check2->get_result()->num_rows > 0) json_error('Cannot delete ingredient: referenced by contain/recipe',409);
 
             $del = $conn->prepare('DELETE FROM INGREDIENT WHERE IngredientID = ?');
             $del->bind_param('i',$id); $del->execute();
