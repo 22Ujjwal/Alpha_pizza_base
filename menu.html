@@ -31,106 +31,11 @@
             <button class="btn btn-secondary" onclick="window.location.href='index.html'">Switch User</button>            
         </div>
 
-        <button class="btn btn-primary" onclick="window.location.href='cart.html'">View Cart [X items?]</button>
+        <button class="btn btn-primary" onclick="window.location.href='cart.html'">View Cart</button>
 
         <!-- Tab Navigation -->
-        <div class="tabs">
-            <button class="tab-button active" onclick="switchTab(event, 'category1')">
-                category1
-            </button>
-            <button class="tab-button" onclick="switchTab(event, 'category2')">
-                category2
-            </button>
-            <button class="tab-button" onclick="switchTab(event, 'category3')">
-                category3
-            </button>
-            <button class="tab-button" onclick="switchTab(event, 'category4')">
-                category4
-            </button>        
-        </div>
+        <div class="tabs" id="category-tabs"></div>
 
-        <!-- Search Items Tab -->
-        <div id="category1" class="tab-content active">
-            <div class="dashboard-grid">
-
-                <!-- Menu Card for an Item -->                                
-                <div class="dashboard-card">
-
-                        <form method="POST" action="cart.html">                        
-                        <h3>Item 1</h3>                                 
-                        <p><i>Price</i></p>
-                        <h4>Ingredients:</h4>
-                        <p>Ingredient1, Ingredient2, Ingredient3</p>
-                        <input type="hidden" name="item" value="Item1">
-                        <div class='addToCartButton'>
-                        <button class="btn btn-primary" type="submit"> Add to cart </button>
-                        </div>
-                        </form>
-                </div>
-            </div>
-        </div>
-
-    
-        <div id="category2" class="tab-content">
-            <div class="dashboard-grid">
-
-                <!-- Menu Card for an Item -->                                
-                <div class="dashboard-card">
-
-                        <form method="POST" action="cart.html">                        
-                        <h3>Item 2</h3>                                 
-                        <p><i>Price</i></p>
-                        <h4>Ingredients:</h4>
-                        <p>Ingredient1, Ingredient2, Ingredient3</p>
-                        <input type="hidden" name="item" value="Item2">
-                        <div class='addToCartButton'>
-                        <button class="btn btn-primary" type="submit"> Add to cart </button>
-                        </div>
-                        </form>
-                </div>
-            </div>
-        </div>
-
-        
-        <div id="category3" class="tab-content">
-            <div class="dashboard-grid">
-
-                <!-- Menu Card for an Item -->                                
-                <div class="dashboard-card">
-
-                        <form method="POST" action="cart.html">                        
-                        <h3>Item 3</h3>                                 
-                        <p><i>Price</i></p>
-                        <h4>Ingredients:</h4>
-                        <p>Ingredient1, Ingredient2, Ingredient3</p>
-                        <input type="hidden" name="item" value="Item3">
-                        <div class='addToCartButton'>
-                        <button class="btn btn-primary" type="submit"> Add to cart </button>
-                        </div>
-                        </form>
-                </div>
-            </div>
-        </div>
-
-        <div id="category4" class="tab-content">
-            <div class="dashboard-grid">
-
-                <!-- Menu Card for an Item -->                                
-                <div class="dashboard-card">
-
-                        <form method="POST" action="cart.html">                        
-                        <h3>Item 4</h3>                                 
-                        <p><i>Price</i></p>
-                        <h4>Ingredients:</h4>
-                        <p>Ingredient1, Ingredient2, Ingredient3</p>
-                        <input type="hidden" name="item" value="Item4">
-                        <div class='addToCartButton'>
-                        <button class="btn btn-primary" type="submit"> Add to cart </button>
-                        </div>
-                        </form>
-                </div>
-            </div>
-        </div>
     </div>
 
     <!-- Footer -->
@@ -138,14 +43,119 @@
         <p>&copy; 2026 Alpha Pizza Base Database System.</p>
     </footer>
 
-    <script>
+   <script>
         function switchTab(evt, tabName) {
             document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
             document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
-            document.getElementById(tabName).classList.add('active');
+            const targetTab = document.getElementById(tabName);
+            if (targetTab) {targetTab.classList.add('active');}
             evt.currentTarget.classList.add('active');
         }
+
+        async function loadDynamicCategories() {
+            try {
+                // 1. Fetch categories from backend
+                const response = await fetch('./api/inventory.php?action=categories');
+                const payload = await response.json();
+                
+                if (!payload.success) throw new Error(payload.message);
+
+                const tabsContainer = document.getElementById('category-tabs');
+                tabsContainer.innerHTML = '';
+                const mainContent = document.querySelector('.container');
+
+                // Extract categories array safely
+                const categoriesArray = payload.data?.categories || payload.categories || [];
+
+                categoriesArray.forEach((cat, index) => {
+                    const tabId = `category-${cat.Category.replace(/\s+/g, '-').toLowerCase()}`;    
+
+                    // Create Tab Button
+                    const btn = document.createElement('button');
+                    btn.className = 'tab-button';
+                    if (index === 0) btn.classList.add('active'); 
+                    btn.textContent = cat.Category;
+                    tabsContainer.appendChild(btn);
+
+                    // Create Content Container
+                    const contentDiv = document.createElement('div');
+                    contentDiv.id = tabId;
+                    contentDiv.className = 'tab-content';
+                    if (index === 0) contentDiv.classList.add('active'); 
+                    mainContent.appendChild(contentDiv);
+
+                    // Attach Click Event
+                    btn.onclick = async (event) => {
+                        switchTab(event, tabId); 
+                        
+                        const container = document.getElementById(tabId);
+                        container.innerHTML = `<p style="padding:20px;">Loading items for ${cat.Category}...</p>`;
+                        
+                        try {
+                            const itemResponse = await fetch(`./api/inventory.php?action=search&search=${encodeURIComponent(cat.Category)}`);
+                            const itemPayload = await itemResponse.json();
+
+                            const itemsArray = itemPayload.data?.items || itemPayload.items || [];
+                            
+                            if (itemsArray.length === 0) {
+                                container.innerHTML = `<p style="padding: 20px;">No items found in this category.</p>`;
+                                return;
+                            }
+
+                            // Fetch ingredients and build cards
+                            const itemsHtmlPromises = itemsArray.map(async (item) => {
+                                let ingredientsText = "Loading...";
+                                try {
+                                    const ingResponse = await fetch(`./api/get_ingredients.php?id=${item.ItemID}`);
+                                    ingredientsText = await ingResponse.text(); 
+                                } catch (e) {
+                                    ingredientsText = "Failed to load";
+                                }
+
+                                // Return the specific HTML string for this item
+                                return `
+                                    <div class="dashboard-card">
+                                        <form method="POST" action="cart.html">
+                                            <h3>${item.ItemName}</h3>
+                                            <p><i>$${Number(item.Price).toFixed(2)}</i></p>
+                                            <h4>Ingredients:</h4>
+                                            <p>${ingredientsText}</p> 
+                                            <input type="hidden" name="item" value="${item.ItemName}">
+                                            <input type="hidden" name="itemId" value="${item.ItemID}">
+                                            
+                                            <div class='addToCartButton'>
+                                                <button class="btn btn-primary" type="submit"> Add to cart </button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                `;
+                            });
+
+                            // Wait for all ingredient requests to finish, then inject HTML
+                            const itemsHtmlArray = await Promise.all(itemsHtmlPromises);
+                            container.innerHTML = `<div class="dashboard-grid">${itemsHtmlArray.join('')}</div>`;
+
+                        } catch (error) {
+                            container.innerHTML = `<p style="color:red; padding: 20px;">Error loading items: ${error.message}</p>`;
+                        }
+                    };
+                });
+
+                // OUTSIDE THE LOOP: Auto-click the first tab after everything is built
+                const firstButton = tabsContainer.querySelector('.tab-button');
+                if (firstButton) {
+                    firstButton.click();
+                }
+
+            } catch (error) {
+                console.error("Failed to load categories:", error);
+            }
+        }
+
+        // Call the function when the page loads
+        document.addEventListener('DOMContentLoaded', loadDynamicCategories);
     </script>
 
 </body>
 </html>
+
